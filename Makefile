@@ -86,6 +86,7 @@ cs-fix:
 
 .PHONY: tests
 tests: APP_ENV=test
+tests: PHP_PCOV_ENABLED=0
 tests: PHP_XDEBUG_MODE=off
 tests:
 	$(MAKE) cache
