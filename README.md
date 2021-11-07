@@ -6,14 +6,14 @@
 composer create-project tseho/symfony-cli-skeleton [directory]
 ```
 
-## Build a docker image for production
+## Production
 
-build:
+Build the docker image:
 ```shell
 DOCKER_IMAGE_NAME=foo DOCKER_IMAGE_VERSION=latest make docker-image
 ```
 
-launch:
+Launch a symfony command with it:
 ```shell
 docker run --rm $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_VERSION bin/console [cmd]
 ```
