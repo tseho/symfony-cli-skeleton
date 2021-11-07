@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+    php:
+        build:
+            context: ./
+            target: runtime
+            args:
+                BUILD_ENV: "${BUILD_ENV:-dev}"
+                USER: "${DOCKER_UID:-1000}"
+        environment:
+            - HOME=/tmp
+            - APP_ENV=${APP_ENV:-dev}
+            - PHP_XDEBUG_MODE=${PHP_XDEBUG_MODE:-off}
+            - PHP_XDEBUG_CLIENT_HOST=${PHP_XDEBUG_CLIENT_HOST:-172.17.0.1}
+            - PHP_XDEBUG_CLIENT_PORT=${PHP_XDEBUG_CLIENT_PORT:-9003}
+            - PHP_IDE_CONFIG=serverName=docker-php-cli
+            - XDEBUG_CONFIG=idekey=docker-php-cli
+        volumes:
+            - "./:/srv/app:rw"
+        user: "${DOCKER_UID:-1000}"
+        restart: "no"
+        init: true
+        scale: 0
+        networks:
+            - default
+
+    composer:
+        build:
+            context: ./
+            target: composer
+        working_dir: /srv/app
+        volumes:
+            - "./:/srv/app:rw"
+            - "${COMPOSER_HOME:-~/.composer}:/tmp"
+        user: "${DOCKER_UID:-1000}"
+        restart: "no"
+        scale: 0
+
+networks:
+    default: ~
