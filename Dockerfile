@@ -26,6 +26,8 @@ RUN if [ "$BUILD_ENV" = "dev" ] || [ "$BUILD_ENV" = "test" ]; then \
 RUN mkdir /srv/app && chown $USER /srv/app
 WORKDIR /srv/app
 
+COPY ./docker/php/php.ini /usr/local/etc/php/conf.d/000-docker.ini
+
 ###############################################################################
 
 FROM runtime AS composer

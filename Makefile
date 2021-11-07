@@ -39,6 +39,7 @@ build:
 
 .PHONY: docker-image
 docker-image: APP_ENV=prod
+docker-image: PHP_PCOV_ENABLED=0
 docker-image: PHP_XDEBUG_MODE=off
 docker-image:
 	docker build . \
@@ -101,7 +102,8 @@ tests-static:
 
 .PHONY: tests-unit
 tests-unit: APP_ENV=test
-tests-unit: PHP_XDEBUG_MODE=coverage
+tests-unit: PHP_PCOV_ENABLED=1
+tests-unit: PHP_XDEBUG_MODE=off
 tests-unit:
 	$(PHP) vendor/bin/phpunit --testsuite "Unit" \
 		--coverage-html coverage/unit/ \
@@ -109,7 +111,8 @@ tests-unit:
 
 .PHONY: tests-integration
 tests-integration: APP_ENV=test
-tests-integration: PHP_XDEBUG_MODE=coverage
+tests-integration: PHP_PCOV_ENABLED=1
+tests-integration: PHP_XDEBUG_MODE=off
 tests-integration:
 	$(PHP) vendor/bin/phpunit --testsuite "Integration" \
 		--coverage-html coverage/integration/ \
