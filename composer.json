@@ -17,7 +17,6 @@
         "symfony/yaml": "5.3.*"
     },
     "require-dev": {
-        "coduo/php-matcher": "^6.0",
         "friendsofphp/php-cs-fixer": "^3.2",
         "phpstan/phpstan": "^1.1",
         "phpunit/phpunit": "^9.5",
