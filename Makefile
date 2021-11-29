@@ -48,6 +48,10 @@ docker-image:
 		--target cli \
 		-t $(DOCKER_IMAGE_NAME):$(DOCKER_IMAGE_VERSION)
 
+.PHONY: destroy
+destroy:
+	$(DOCKER_COMPOSE) down --remove-orphan --volumes --rmi local
+
 ##
 ## Setup
 ##
