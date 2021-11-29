@@ -1,7 +1,4 @@
-FROM php:8-apache AS runtime
-
-ARG BUILD_ENV=prod
-ARG USER=www-data
+FROM php:8.0.13-cli AS core
 
 RUN apt-get update \
     && apt-get install -y \
@@ -10,27 +7,14 @@ RUN apt-get update \
     && docker-php-ext-install \
         bcmath \
         intl \
-    && mv /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-RUN if [ "$BUILD_ENV" = "dev" ] || [ "$BUILD_ENV" = "test" ]; then \
-    pecl install \
-        xdebug \
-        pcov && \
-    docker-php-ext-enable \
-        xdebug \
-        pcov \
-    ; fi
-
-RUN mkdir /srv/app && chown $USER /srv/app
-WORKDIR /srv/app
 
 COPY ./docker/php/php.ini /usr/local/etc/php/conf.d/000-docker.ini
 
 ###############################################################################
 
-FROM runtime AS composer
+FROM core AS composer
 
 ENV COMPOSER_HOME=/tmp
 
@@ -42,7 +26,7 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-COPY --from=composer:2.1 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.1.12 /usr/bin/composer /usr/bin/composer
 COPY ./docker/composer/php.ini /usr/local/etc/php/conf.d/custom.ini
 
 ENTRYPOINT ["composer"]
@@ -50,12 +34,36 @@ CMD ["help"]
 
 ###############################################################################
 
+FROM core AS runtime
+
+ARG BUILD_ENV=prod
+ARG APP_ENV=prod
+ARG USER=www-data
+
+RUN if [ "$BUILD_ENV" = "dev" ] || [ "$BUILD_ENV" = "test" ]; then \
+    pecl install \
+        xdebug \
+        pcov && \
+    docker-php-ext-enable \
+        xdebug \
+        pcov \
+    ; fi
+
+RUN mkdir -p /srv/app && chown $USER /srv/app
+WORKDIR /srv/app
+
+ENV APP_ENV=$APP_ENV
+USER $USER
+
+###############################################################################
+
 FROM composer AS vendors
 
 ARG BUILD_ENV=prod
+ARG USER=www-data
 
+RUN mkdir -p /srv/app/vendor && chown -R $USER /srv/app
 WORKDIR /srv/app
-RUN mkdir /srv/app/vendor
 COPY composer.json composer.lock symfony.lock ./
 
 RUN if [ "$BUILD_ENV" = "prod" ]; then export COMPOSER_ARGS=--no-dev; fi; \
@@ -70,15 +78,6 @@ RUN if [ "$BUILD_ENV" = "prod" ]; then export COMPOSER_ARGS=--no-dev; fi; \
 ###############################################################################
 
 FROM runtime AS cli
-
-ARG USER=www-data
-ARG APP_ENV=prod
-
-ENV APP_ENV=$APP_ENV
-
-WORKDIR /srv/app
-
-USER $USER
 
 COPY . .
 COPY --from=vendors /srv/app/vendor vendor
