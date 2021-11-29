@@ -23,8 +23,6 @@ services:
         restart: "no"
         init: true
         scale: 0
-        networks:
-            - default
 
     composer:
         build:
@@ -37,6 +35,3 @@ services:
         user: "${DOCKER_UID:-1000}"
         restart: "no"
         scale: 0
-
-networks:
-    default: ~
